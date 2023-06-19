@@ -3,40 +3,59 @@ import pandas as pd
 import numpy as np 
 import matplotlib.pyplot as plt
 from database import *
+from matplotlib.dates import DateFormatter
+import matplotlib.dates as mdates
 
 
 result = view_all_data()
 
 data = pd.DataFrame(result,columns=["id",'time',"date","count"])
-#data = pd.read_csv('dumy2.csv') 
 
 
 option = st.sidebar.selectbox(
     'Silakan pilih:',
-    ('Home','Dataframe','Chart')
+    ('Home','Daily','Monthly','general chart')
 )
 
 if option == 'Home' or option == '':
-    st.write("""# Halaman Utama""") #menampilkan halaman utama
-    #print 10 baris pertama dari data
-    st.write("""## Data 10 baris pertama""") #menampilkan judul halaman data 10 baris pertama
-    st.write(data.head(10))
-elif option == 'Dataframe':
-    st.write("""## Dataframe""") #menampilkan judul halaman dataframe
+    st.write("""# Halaman Utama""")
+    st.write("""## Data 10 baris pertama""")
+    st.write(data.head(20))
 
-    #membuat dataframe menggunakan data menu
+elif option == 'Daily':
+    st.write("""## Daily""")
     df = pd.DataFrame(
         data,
         columns=['time','date','count']
     )
-    df #menampilkan dataframe
-elif option == 'Chart':
-    st.write("""# Draw Charts""") #menampilkan judul halaman 
+    fib, ax = plt.subplots(figsize=(12, 8))
+    ax.plot(df.index.values,
+            df['count'].values,
+            color='purple')
+    ax.set(xlabel="date", ylabel="count",
+           title="daily")
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
+    ax.xaxis.set_major_formatter(DateFormatter("%m-%d"))
+    st.pyplot(fib)
 
-    #membuat variabel chart data yang berisi data dari dataframe
-    #data berupa angka acak yang di-generate menggunakan numpy
-    #data terdiri dari 2 kolom dan 20 baris
+elif option == 'Monthly':
+    st.write("""## Monthly""")
+    dp = pd.DataFrame(
+        data,columns=['time','date','count'],
+    )
+    fip,ax1 = plt.subplots()
+    dp.plot.bar(x = 'date', y = ['count'], rot = 90, ax = ax1)
+    ax1.set(xlabel="Month", ylabel="count",
+           title="monthly")
+    monthyearFmt = mdates.DateFormatter('%B %Y')
+    ax1.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+    ax1.xaxis.set_major_formatter(monthyearFmt)
+    _ = plt.xticks(rotation=90)
+    st.pyplot(fip)
 
+
+elif option == 'general chart':
+    st.write("""# General Charts""")
     df = pd.DataFrame(
         data,
         columns=['time','date','count']
@@ -45,6 +64,4 @@ elif option == 'Chart':
     df.plot.bar(x = 'date', y = ['count'], rot = 90, ax = ax)
     for p in ax.patches: 
         ax.annotate(np.round(p.get_height(),decimals=2), (p.get_x()+p.get_width()/2., p.get_height()))
-    st.pyplot(fig) #menampilkan chart
-    st.write("""## Dataframe""") #menampilkan judul halaman dataframe
-    df
+    st.pyplot(fig)
